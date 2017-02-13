@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="folder_color">#0000FF</color>
+    <color name="file_color">#000</color>
+    <color name="unselectable">#F00</color>
+
+    <color name="dull_listing">#666</color>
+    <color name="dull_listing_bg">#ddd</color>
+</resources>
