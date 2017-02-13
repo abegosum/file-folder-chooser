@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_file_folder_chooser"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.aaronmbond.filefolderchoosers.FileFolderChooser">
+
+    <TextView
+        android:id="@+id/lblGoUpOneLevel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        style="@style/file_folder_heading"
+        android:text=".. (Up one directory)"
+        android:layout_marginBottom="@dimen/standard_margin"
+        />
+
+    <!-- Note that the '+' appears in the android:layout_above here:
+         All first instances of ids in the xml files (as read from top to bottom)
+         must contain the plus -->
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rcvFileListing"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/lblGoUpOneLevel"
+        android:layout_above="@+id/lblFullCurrentPath"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+
+    <TextView
+        android:id="@id/lblFullCurrentPath"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        style="@style/current_path_listing"
+        />
+
+
+</RelativeLayout>

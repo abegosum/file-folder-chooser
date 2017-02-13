@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="file_folder_heading">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">@dimen/heading_text_size</item>
+        <item name="android:layout_marginLeft">@dimen/standard_margin</item>
+    </style>
+    <style name="file_folder_subheading">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">@dimen/subheading_text_size</item>
+        <item name="android:layout_marginLeft">@dimen/indent_margin</item>
+    </style>
+    <style name="current_path_listing">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/dull_listing</item>
+        <item name="android:background">@color/dull_listing_bg</item>
+        <item name="android:textSize">@dimen/tiny_text_size</item>
+        <item name="android:padding">@dimen/tiny_text_padding</item>
+    </style>
+</resources>
