@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/FileFilderChooser.iml" filepath="$PROJECT_DIR$/FileFilderChooser.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/file-folder-chooser.iml" filepath="$PROJECT_DIR$/file-folder-chooser.iml" />
       <module fileurl="file://$PROJECT_DIR$/filefolderchooser/filefolderchooser.iml" filepath="$PROJECT_DIR$/filefolderchooser/filefolderchooser.iml" />
     </modules>
   </component>

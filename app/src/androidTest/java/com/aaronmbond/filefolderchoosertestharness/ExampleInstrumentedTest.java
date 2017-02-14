@@ -1,4 +1,4 @@
-package com.aaronmbond.filefilderchooser;
+package com.aaronmbond.filefolderchoosertestharness;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
