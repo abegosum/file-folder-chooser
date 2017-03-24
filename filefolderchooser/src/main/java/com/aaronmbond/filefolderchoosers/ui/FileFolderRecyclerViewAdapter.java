@@ -1,5 +1,6 @@
 package com.aaronmbond.filefolderchoosers.ui;
 
+import android.os.AsyncTask;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -12,9 +13,6 @@ import android.widget.TextView;
 import com.aaronmbond.filefolderchoosers.R;
 
 import java.io.File;
-import java.text.DateFormat;
-import java.text.FieldPosition;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +32,8 @@ public class FileFolderRecyclerViewAdapter
     private File currentPath;
     private boolean folderSelect = false;
     private boolean multiSelect = false;
-    private File[] directoryList;
+    // needs to be initialized to 0 objects
+    private File[] directoryList = new File[0];
     private OnFilesystemItemTouchListener filesystemItemTouchListener;
     private List<File> selected;
 
@@ -48,6 +47,12 @@ public class FileFolderRecyclerViewAdapter
 
     public boolean getFolderSelect() {
         return folderSelect;
+    }
+
+    public void setMultiSelect(boolean multiSelect) { this.multiSelect = multiSelect; }
+
+    public boolean getMultiSelect() {
+        return multiSelect;
     }
 
     public List<File> getSelected() {
@@ -68,37 +73,8 @@ public class FileFolderRecyclerViewAdapter
     }
 
     public void setPath(File pathToView, boolean refreshView) {
-        this.currentPath = pathToView;
-        Log.d(DEBUG_TAG, "Attempting to set current path to " + pathToView.getAbsolutePath());
-        if (!pathToView.exists() || !pathToView.isDirectory()) {
-            throw new IllegalArgumentException("FileFolderChooser viewing paths must be directories that exist");
-        }
-        directoryList = pathToView.listFiles();
-        sortFiles(directoryList);
-        Log.d(DEBUG_TAG, "Set path contains " + directoryList.length + " files");
-        if (refreshView) {
-            this.notifyDataSetChanged();
-        }
-        currentPath = pathToView;
-    }
-
-    private void sortFiles(File[] files) {
-        Arrays.sort(files, new Comparator<File>() {
-            @Override
-            public int compare(File o1, File o2) {
-                int result = 0;
-                // files are of same type, compare names
-                if ((o1.isDirectory() && o2.isDirectory()) ||
-                        !o1.isDirectory() && !o2.isDirectory()) {
-                    result = o1.getName().compareTo(o2.getName());
-                } else if (o1.isDirectory()) { //directories are "less than" (come first)
-                    result = -1;
-                } else {
-                    result = 1;
-                }
-                return result;
-            }
-        });
+        SetPathTask setPathTask = new SetPathTask(pathToView, refreshView);
+        setPathTask.execute();
     }
 
     @Override
@@ -125,6 +101,57 @@ public class FileFolderRecyclerViewAdapter
     @Override
     public int getItemCount() {
         return directoryList.length;
+    }
+
+    private class SetPathTask extends AsyncTask<Void, Void, File[]> {
+
+        private File pathToView;
+        private boolean refreshView;
+
+        public SetPathTask(File pathToView, boolean refreshView) {
+            this.pathToView = pathToView;
+            this.refreshView = refreshView;
+        }
+
+        @Override
+        protected void onPostExecute(File[] files) {
+            currentPath = pathToView;
+            directoryList = files;
+            if (refreshView) {
+                notifyDataSetChanged();
+            }
+        }
+
+        private void sortFiles(File[] files) {
+            Arrays.sort(files, new Comparator<File>() {
+                @Override
+                public int compare(File o1, File o2) {
+                    int result = 0;
+                    // files are of same type, compare names
+                    if ((o1.isDirectory() && o2.isDirectory()) ||
+                            !o1.isDirectory() && !o2.isDirectory()) {
+                        result = o1.getName().compareTo(o2.getName());
+                    } else if (o1.isDirectory()) { //directories are "less than" (come first)
+                        result = -1;
+                    } else {
+                        result = 1;
+                    }
+                    return result;
+                }
+            });
+        }
+
+        @Override
+        protected File[] doInBackground(Void... voids) {
+            if (!pathToView.exists() || !pathToView.isDirectory()) {
+                throw new IllegalArgumentException("FileFolderChooser viewing paths must be " +
+                        "directories that exist");
+            }
+            File[] directoryListResult =  pathToView.listFiles();
+            sortFiles(directoryListResult);
+            Log.d(DEBUG_TAG, "Set path contains " + directoryListResult.length + " files");
+            return directoryListResult;
+        }
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder
@@ -177,6 +204,31 @@ public class FileFolderRecyclerViewAdapter
             chkFileSelected = (CheckBox) itemView.findViewById(R.id.chkFileSelected);
         }
 
+        private boolean itemIsSelected() {
+            return selected != null && selected.contains(file);
+        }
+
+        private void setItemSelected() {
+            if (selected == null) {
+                selected = new ArrayList<File>();
+            }
+            selected.add(file);
+        }
+
+        private void setItemDeselected() {
+            if (selected != null) {
+                selected.remove(file);
+            }
+        }
+
+        private void toggleItemSelected() {
+            if (itemIsSelected()) {
+                setItemDeselected();
+            } else {
+                setItemSelected();
+            }
+        }
+
         public void dataBindView() {
             setupUiElements();
             lblFileFolderName.setText(file.getName());
@@ -197,6 +249,7 @@ public class FileFolderRecyclerViewAdapter
                 lblFileFolderName.setTextColor(fileColor);
                 details = "file" + details;
                 if (!folderSelect && mutiSelect) {
+                    Log.d(DEBUG_TAG, "Non-folder, multi-select on file- show checkbox");
                     chkFileSelected.setVisibility(View.VISIBLE);
                 }
             }
