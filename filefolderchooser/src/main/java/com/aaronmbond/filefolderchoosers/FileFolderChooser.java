@@ -21,6 +21,7 @@ import com.aaronmbond.filefolderchoosers.ui.OnFilesystemItemTouchListener;
 import com.aaronmbond.filefolderchoosers.util.PermissionHelper;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Copyright 2/5/2017 Aaron M. Bond
@@ -131,13 +132,18 @@ public class FileFolderChooser extends AppCompatActivity
     }
 
     private void setupFolderDisplay() {
+        setupFolderDisplay(getCurrentLocation());
+    }
+
+    private void setupFolderDisplay(File path) {
         setupUiElements();
         if (PermissionHelper.checkExternalWritePermissionsEnabled(this)) {
             Log.d(DEBUG_TAG, "Attempt to setup file/folder chooser for location " +
                     getCurrentLocation().getAbsolutePath());
             FileFolderRecyclerViewAdapter adapter =
-                    new FileFolderRecyclerViewAdapter(getCurrentLocation(), this);
+                    new FileFolderRecyclerViewAdapter(path, this);
             adapter.setFolderSelect(isFolderSelect());
+            adapter.setMultiSelect(isFileSelectMultiple());
             rcvFileListing.setHasFixedSize(true);
             rcvFileListing.setLayoutManager(new LinearLayoutManager(this));
             rcvFileListing.setAdapter(adapter);
@@ -162,6 +168,17 @@ public class FileFolderChooser extends AppCompatActivity
         finish();
     }
 
+    private void returnMultipleFilesAsResult(File[] files) {
+        Intent resultData = new Intent();
+        String[] resultPaths = new String[files.length];
+        for (int i = 0; i < files.length; i++) {
+            resultPaths[i] = files[i].getAbsolutePath();
+        }
+        resultData.putExtra(SELECTED_PATH_KEY, resultPaths);
+        setResult(RESULT_OK, resultData);
+        finish();
+    }
+
     private void setPathLabel(String absolutePath) {
         setupUiElements();
         lblFullCurrentPath.setText("Path: " + absolutePath);
@@ -171,6 +188,14 @@ public class FileFolderChooser extends AppCompatActivity
         FileFolderRecyclerViewAdapter adapter =
                 (FileFolderRecyclerViewAdapter) rcvFileListing.getAdapter();
         returnFileAsResult(adapter.getCurrentPath());
+    }
+
+    private void returnMultiSelectAsResult() {
+        FileFolderRecyclerViewAdapter adapter =
+                (FileFolderRecyclerViewAdapter) rcvFileListing.getAdapter();
+        List<File> selected = adapter.getSelected();
+        File[] result = selected.toArray(new File[selected.size()]);
+        returnMultipleFilesAsResult(result);
     }
 
     @Override
@@ -185,12 +210,16 @@ public class FileFolderChooser extends AppCompatActivity
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_file_folder_chooser, menu);
         mnuSelectFolderFile = menu.findItem(R.id.mnuSelectFolderFile);
-        mnuSelectFolderFile.setEnabled(isFolderSelect());
-        mnuSelectFolderFile.setVisible(isFolderSelect());
+        mnuSelectFolderFile.setEnabled(isFolderSelect() || isFileSelectMultiple());
+        mnuSelectFolderFile.setVisible(isFolderSelect() || isFileSelectMultiple());
         mnuSelectFolderFile.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                returnCurrentPathAsResult();
+                if (isFolderSelect()) {
+                    returnCurrentPathAsResult();
+                } else if (isFileSelectMultiple()) {
+                    returnMultiSelectAsResult();
+                }
                 return true;
             }
         });
@@ -215,6 +244,26 @@ public class FileFolderChooser extends AppCompatActivity
                 }
                 break;
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        FileFolderRecyclerViewAdapter adapter =
+                (FileFolderRecyclerViewAdapter) rcvFileListing.getAdapter();
+        String currentPath = adapter.getCurrentPath().getPath();
+        outState.putString(this.STARTING_PATH_KEY, currentPath);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        String currentPath = savedInstanceState.getString(STARTING_PATH_KEY);
+        if (currentPath != null) {
+            File startingFile = new File(currentPath);
+            setupFolderDisplay(startingFile);
+            setPathLabel(currentPath);
+        }
+        super.onRestoreInstanceState(savedInstanceState);
     }
 
     @Override
