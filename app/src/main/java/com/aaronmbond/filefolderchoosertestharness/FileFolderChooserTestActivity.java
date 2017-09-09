@@ -103,7 +103,22 @@ public class FileFolderChooserTestActivity extends AppCompatActivity {
                 }
                 break;
             case MULTI_FILE_CODE:
-                Toast.makeText(this, "Multi-select not yet implemented", Toast.LENGTH_LONG).show();
+                if (resultCode == RESULT_OK && data != null) {
+                    String[] resultPaths =
+                            data.getStringArrayExtra(FileFolderChooser.SELECTED_PATH_KEY);
+                    StringBuilder resultMessage = new StringBuilder();
+                    resultMessage.append("Selected:");
+                    resultMessage.append("\n");
+                    for (String path : resultPaths) {
+                        resultMessage.append(path);
+                        resultMessage.append("\n");
+                    }
+                    Toast.makeText(this, resultMessage.toString(), Toast.LENGTH_LONG).show();
+                } else if (resultCode == RESULT_OK) {
+                    Toast.makeText(this, "Data came back null", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show();
+                }
                 break;
             case FOLDER_CODE:
                 if (resultCode == RESULT_OK && data != null) {
